@@ -1,0 +1,23 @@
+<svg [ngStyle]="{width: maxRange * unitSize + 'px'}" height="36px">
+  <rect
+    *ngFor="let j of task.jobs"
+    class="job"
+    [ngStyle]="{
+      x: j.startAt * unitSize,
+      width: j.duration * unitSize,
+      fill: j.isAfterDeadline ? 'red' : task.color,
+      stroke: task.borderColor,
+      strokeWidth: '1',
+    }">
+  </rect>
+</svg>
+
+<div class="row-group">
+  <div *ngFor="let ts of timesteps" class="timestep" [ngStyle]="{width: unitSize + 'px'}">
+    <span>{{ts}}</span>
+  </div>
+</div>
+  
+<div *ngFor="let d of deadlines" class="deadline" [ngStyle]="{left: d * unitSize + 'px'}">
+
+</div>

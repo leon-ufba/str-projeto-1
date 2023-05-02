@@ -1,0 +1,52 @@
+<div class="task-manager">
+  <div class="algorithm-panel">
+    <span>Run Algorithm</span>
+    <button type="button" (click)="runRMS()">RMS</button>
+    <button type="button" (click)="runEDF()">EDF</button>
+    <button type="button" (click)="runByID()">ID</button>
+  </div>
+  <div class="new-task-form">
+    <span>Período</span>
+    <input [(ngModel)]="newTask.period" type="number">
+    <span>Duração</span>
+    <input [(ngModel)]="newTask.duration" type="number">
+    <div class="labeled-checkbox">
+      <input [(ngModel)]="newTask.isAsync" [ngModelOptions]="{standalone: true}" type="checkbox" id="asyncTask">
+      <label for="asyncTask">Assíncrona</label>
+    </div>
+    <button type="button" (click)="addTask()">Adicionar Task</button>
+  </div>
+  <div class="details-panel">
+    <span>Algoritmo:</span>
+    <span class="detail-data">{{algorithm}}</span>
+    <span>Utilização:</span>
+    <span class="detail-data">{{utilization}}%</span>
+    <span>Tempo máx:</span>
+    <span class="detail-data">{{maxRange}}</span>
+    <span>Funcionou?</span>
+    <span class="detail-data" [ngStyle]="{ color: runError ? 'red' : 'lime' }">{{runError ? 'erro' : 'sim'}}</span>
+  </div>
+  <div class="tasks-table-panel custom-scroll">
+    <table class="tasktable" id="table-of-tasks">
+      <thead>
+        <tr>
+          <th scope="col">Task ID</th>
+          <th scope="col">Período</th>
+          <th scope="col">Duração</th>
+          <th scope="col">Deletar</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let task of tasks" [ngStyle]="{ backgroundColor: task.color }">
+          <td>{{task.id}}</td>
+          <td>{{task.period}}</td>
+          <td>{{task.duration}}</td>
+          <td><button type="button" (click)="removeTask(task.id)"><span>close</span></button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="timeline-group custom-scroll">
+  <app-timeline *ngFor="let period of tasks" [task]="period" [maxRange]="maxRange"></app-timeline>
+</div>
