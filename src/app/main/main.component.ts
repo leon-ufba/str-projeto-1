@@ -64,7 +64,7 @@ export class MainComponent {
 
   updateParameters() {
     const periods = this.tasks.filter(k => !k.isAsync).map(k => k.period);
-    this.maxRange = this.lcm(periods);
+    this.maxRange = (periods.length) ? this.lcm(periods) : 0;
     if(this.algorithm === 'RMS') this.runRMS();
     if(this.algorithm === 'EDF') this.runEDF();
     if(this.algorithm === 'ID') this.runByID();
@@ -74,8 +74,9 @@ export class MainComponent {
     const { period, duration, isAsync } = this.newTask;
     if(!period || !duration) return;
     const colorHue = Math.floor(Math.random() * 360);
+    const newId = Math.max(...this.tasks.map(k => k.id)) + 1;
     const newTask: Task = {
-      id: Math.max(...this.tasks.map(k => k.id || -1)) + 1,
+      id: isFinite(newId) ? newId : 0,
       period,
       duration,
       isAsync,
@@ -127,7 +128,7 @@ export class MainComponent {
       }
       unusedTime += availableUnits;
     }
-    this.runError = this.tasks.some(k => k.jobs?.some(o => o.isAfterDeadline));
+    this.runError = requiredTime.some(k => k !== 0) || this.tasks.some(k => k.jobs?.some(o => o.isAfterDeadline));
     const utilization = ((this.maxRange * this.cpuQty) - unusedTime) / (this.maxRange * this.cpuQty);
     this.utilization = Math.round(utilization * 10000) / 100;
     if(time > this.maxRange) {
