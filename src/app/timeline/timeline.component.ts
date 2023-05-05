@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges, ViewContainerRef } from '@angular/core';
-import { Task } from '../app.interfaces';
+import { Task, TaskAlgorithm } from '../app.interfaces';
 
 @Component({
   selector: 'app-timeline',
@@ -8,12 +8,14 @@ import { Task } from '../app.interfaces';
 })
 export class TimelineComponent implements OnChanges {
   @Input() task!: Task;
+  @Input() algorithm!: TaskAlgorithm;
   @Input() maxRange!: number;
 
   unitSize: number = 60;
 
-  deadlines: any[] = [];
   timesteps: number[] = [];
+  periods:   number[] = [];
+  deadlines: number[] = [];
 
   constructor() {}
 
@@ -29,8 +31,17 @@ export class TimelineComponent implements OnChanges {
 
   updateDeadlines = () => {
     if(this.task === undefined || this.maxRange === undefined) return;
+    this.periods   = [];
     this.deadlines = [];
     for (let i = 0; i <= this.maxRange; i += this.task.period) {
+      this.periods.push(i);
+    }
+    let firstDeadLine = 0;
+    if(this.algorithm === 'EDF') {
+      this.deadlines.push(firstDeadLine);
+      firstDeadLine = this.task.deadline;
+    }
+    for (let i = firstDeadLine; i <= this.maxRange; i += this.task.period) {
       this.deadlines.push(i);
     }
   }

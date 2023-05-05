@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Job, Task, TaskAlgorithm } from '../app.interfaces';
+import { CalcTask, Job, Task, TaskAlgorithm } from '../app.interfaces';
 
 @Component({
   selector: 'main-root',
@@ -13,12 +13,14 @@ export class MainComponent {
 
   cpuQty = 1;
   utilization = 1;
-  runError: boolean = false;
+  runOk: boolean = false;
+  runTest:  boolean = false;
 
   newTask: Task = {
     id: 0,
     duration: 1,
     period: 1,
+    deadline: 1,
   };
 
   maxRange!: number;
@@ -30,18 +32,18 @@ export class MainComponent {
     // lista de tasks
 
     this.tasks = [
-      // { id: 0, duration: 2, period: 12 },
-      // { id: 0, duration: 1, period:  6 },
-      // { id: 0, duration: 4, period: 24 },
-      // { id: 0, duration: 1, period: 12 },
+      // { id: 0, duration: 2, period: 12, deadline: 12 },
+      // { id: 0, duration: 1, period:  6, deadline:  6 },
+      // { id: 0, duration: 4, period: 24, deadline: 24 },
+      // { id: 0, duration: 1, period: 12, deadline: 12 },
 
-      // { id: 0, duration: 2, period: 5  },
-      // { id: 0, duration: 2, period: 10 },
-      // { id: 0, duration: 3, period: 20 },
+      // { id: 0, duration: 2, period: 5 , deadline: 4 },
+      // { id: 0, duration: 2, period: 10, deadline: 8 },
+      // { id: 0, duration: 3, period: 20, deadline: 7 },
 
-      { id: 0, duration: 2, period: 9 },
-      { id: 0, duration: 2, period: 5 },
-      { id: 0, duration: 1, period: 3 },
+      { id: 0, duration: 2, period: 9, deadline: 9 },
+      { id: 0, duration: 2, period: 5, deadline: 5 },
+      { id: 0, duration: 1, period: 3, deadline: 3 },
     ];
     this.tasks.forEach((k, i) => {
       const colorHue = Math.floor(Math.random() * 360);
@@ -71,7 +73,7 @@ export class MainComponent {
   }
 
   addTask() {
-    const { period, duration, isAsync } = this.newTask;
+    const { period, duration, deadline, isAsync } = this.newTask;
     if(!period || !duration) return;
     const colorHue = Math.floor(Math.random() * 360);
     const newId = Math.max(...this.tasks.map(k => k.id)) + 1;
@@ -79,6 +81,7 @@ export class MainComponent {
       id: isFinite(newId) ? newId : 0,
       period,
       duration,
+      deadline,
       isAsync,
       color: this.backgroundColor(colorHue),
       borderColor: this.borderColor(colorHue),
@@ -96,62 +99,86 @@ export class MainComponent {
     }
   }
 
-  runSomeAlgorithm() {
-    this.tasks.forEach(k => k.jobs = []);
-    let time = 0;
-    let unusedTime = 0;
-    const requiredTime: number[] = this.tasks.map(k => 0);
-    const isAfterDeadline: boolean[] = this.tasks.map(k => false);
-    for(; time < this.maxRange; time++) {
-      let availableUnits = this.cpuQty;
-      for (let i = 0; i < this.tasks.length; i++) {
-        const task = this.tasks[i];
-        if(time % task.period === 0) {
-          isAfterDeadline[i] = requiredTime[i] > 0;
-          requiredTime[i] += task.duration;
-        }
-        if(availableUnits > 0 && requiredTime[i] > 0) {
-          const lastTaskJob = (task.jobs?.length) ? task.jobs[task.jobs.length - 1] : undefined;
-          if(lastTaskJob && (lastTaskJob.startAt + lastTaskJob.duration) === time && lastTaskJob.isAfterDeadline === isAfterDeadline[i]) {
-            lastTaskJob.duration += 1;
-          } else {
-            const newJob: Job = {
-              duration: 1,
-              startAt: time,
-              isAfterDeadline: isAfterDeadline[i],
-            };
-            task.jobs?.push(newJob);
-          }
-          requiredTime[i]--;
-          availableUnits--;
-        }
-      }
-      unusedTime += availableUnits;
-    }
-    this.runError = requiredTime.some(k => k !== 0) || this.tasks.some(k => k.jobs?.some(o => o.isAfterDeadline));
-    const utilization = ((this.maxRange * this.cpuQty) - unusedTime) / (this.maxRange * this.cpuQty);
-    this.utilization = Math.round(utilization * 10000) / 100;
-    if(time > this.maxRange) {
-      this.maxRange = time;
-    }
-  }
-
   runRMS() {
     this.algorithm = 'RMS';
-    this.tasks.sort((a, b) => a.period - b.period);
     this.runSomeAlgorithm();
   }
 
   runEDF() {
     this.algorithm = 'EDF';
-    this.tasks.sort((a, b) => a.period - b.period);
     this.runSomeAlgorithm();
   }
 
   runByID() {
     this.algorithm = 'ID';
-    this.tasks.sort((a, b) => a.id - b.id);
     this.runSomeAlgorithm();
+  }
+
+  sortTasks(tasks: CalcTask[], algorithm: TaskAlgorithm) {
+    switch (algorithm) {
+      case 'RMS': tasks.sort((a, b) => a.period - b.period); break;
+      case 'EDF': tasks.sort((a, b) => a.nextDeadline - b.nextDeadline); break;
+      case 'ID' : tasks.sort((a, b) => a.id - b.id); break;
+      default: break;
+    }
+  }
+
+  runSomeAlgorithm() {
+    const tasks: CalcTask[] = structuredClone(this.tasks).map((k: any) => {
+      k.requiredTime = 0;
+      k.isAfterDeadline = false;
+      k.nextDeadline = (this.algorithm === 'EDF') ? k.deadline : k.period;
+      k.jobs = [];
+      return k;
+    });
+
+    const n = tasks.length;
+    const a = tasks.reduce((ans, curr) => ans + curr.duration/curr.period, 0);
+    const b = (this.algorithm === 'EDF') ? 1 : n*(2**(1/n) - 1);
+    this.runTest = (n === 0) || (a <= b);
+
+    let time = 0;
+    let unusedTime = 0;
+
+    for(; time < this.maxRange; time++) {
+      let availableUnits = this.cpuQty;
+      for (const task of tasks) {
+        if(time === task.nextDeadline) {
+          task.isAfterDeadline = task.requiredTime > 0;
+        }
+        if(time % task.period === 0) {
+          if(time > 0) task.nextDeadline += task.period;
+          task.requiredTime += task.duration;
+        }
+      }
+      this.sortTasks(tasks, this.algorithm);
+      for (const task of tasks) {
+        if(availableUnits > 0 && task.requiredTime > 0) {
+          const lastTaskJob = (task.jobs?.length) ? task.jobs[task.jobs.length - 1] : undefined;
+          if(lastTaskJob && (lastTaskJob.startAt + lastTaskJob.duration) === time && lastTaskJob.isAfterDeadline === task.isAfterDeadline) {
+            lastTaskJob.duration += 1;
+          } else {
+            const newJob: Job = {
+              duration: 1,
+              startAt: time,
+              isAfterDeadline: task.isAfterDeadline,
+            };
+            task.jobs?.push(newJob);
+          }
+          task.requiredTime--;
+          availableUnits--;
+        }
+      }
+      unusedTime += availableUnits;
+    }
+    this.runOk = tasks.every(k => k.requiredTime === 0) && tasks.every(k => k.jobs?.every(o => !o.isAfterDeadline));
+    const utilization = ((this.maxRange * this.cpuQty) - unusedTime) / (this.maxRange * this.cpuQty);
+    this.utilization = isFinite(utilization) ? Math.round(utilization * 10000) / 100 : 0;
+    if(time > this.maxRange) {
+      this.maxRange = time;
+    }
+    this.sortTasks(tasks, this.algorithm);
+    this.tasks = structuredClone(tasks);
   }
 
 }

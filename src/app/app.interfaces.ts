@@ -2,6 +2,7 @@ export interface Task {
   id:           number,
   period:       number,
   duration:     number,
+  deadline:     number,
   color?:       string,
   borderColor?: string,
   isAsync?:     boolean,
@@ -15,3 +16,9 @@ export interface Job {
 }
 
 export type TaskAlgorithm = 'RMS' | 'EDF' | 'ID';
+
+export interface CalcTask extends Task {
+  requiredTime:    number,
+  isAfterDeadline: boolean,
+  nextDeadline:    number,
+}

@@ -6,25 +6,58 @@
     <button type="button" (click)="runByID()">ID</button>
   </div>
   <div class="new-task-form">
-    <span>Período</span>
-    <input [(ngModel)]="newTask.period" type="number">
-    <span>Duração</span>
-    <input [(ngModel)]="newTask.duration" type="number">
-    <div class="labeled-checkbox">
+
+    <div class="labeled-input">
+      <span>Período</span>
+      <input [(ngModel)]="newTask.period" type="number">
+    </div>
+    <div class="labeled-input">
+      <span>Duração</span>
+      <input [(ngModel)]="newTask.duration" type="number">
+    </div>
+    <div class="labeled-input">
+      <span>Deadline</span>
+      <input [(ngModel)]="newTask.deadline" type="number">
+    </div>
+    <!-- <div class="labeled-checkbox">
       <input [(ngModel)]="newTask.isAsync" [ngModelOptions]="{standalone: true}" type="checkbox" id="asyncTask">
       <label for="asyncTask">Assíncrona</label>
-    </div>
+    </div> -->
     <button type="button" (click)="addTask()">Adicionar Task</button>
   </div>
   <div class="details-panel">
-    <span>Algoritmo:</span>
-    <span class="detail-data">{{algorithm}}</span>
-    <span>Utilização:</span>
-    <span class="detail-data">{{utilization}}%</span>
-    <span>Tempo máx:</span>
-    <span class="detail-data">{{maxRange}}</span>
-    <span>Funcionou?</span>
-    <span class="detail-data" [ngStyle]="{ color: runError ? 'red' : 'lime' }">{{runError ? 'erro' : 'sim'}}</span>
+    <div class="detail-group">
+      <span>Algoritmo:</span>
+      <span class="detail-data">{{algorithm}}</span>
+    </div>
+    <div class="detail-group">
+    </div>
+    <div class="detail-group">
+      <span>Tempo máx:</span>
+      <span class="detail-data">{{maxRange}}</span>
+    </div>
+    <div class="detail-group">
+      <span>Utilização:</span>
+      <span class="detail-data">{{utilization}}%</span>
+    </div>
+    <div class="detail-group">
+      <span>Funcionou?</span>
+      <span
+        class="detail-data"
+        [ngStyle]="{ color: runOk ? 'lime' : 'red' }"
+      >
+        {{runOk ? 'sim' : 'erro' }}
+      </span>
+    </div>
+    <div class="detail-group">
+      <span>Teste?</span>
+      <span
+        class="detail-data"
+        [ngStyle]="{ color: (algorithm === 'ID') ? 'lime' : runTest ? 'lime' : 'red' }"
+      >
+        {{(algorithm === 'ID') ? '-' : runTest ? 'sim' : 'erro' }}
+      </span>
+    </div>
   </div>
   <div class="tasks-table-panel custom-scroll">
     <table class="tasktable" id="table-of-tasks">
@@ -33,6 +66,7 @@
           <th scope="col">Task ID</th>
           <th scope="col">Período</th>
           <th scope="col">Duração</th>
+          <th scope="col">Deadline</th>
           <th scope="col">Deletar</th>
         </tr>
       </thead>
@@ -41,6 +75,7 @@
           <td>{{task.id}}</td>
           <td>{{task.period}}</td>
           <td>{{task.duration}}</td>
+          <td>{{(algorithm === 'EDF') ? task.deadline : task.period}}</td>
           <td><button type="button" (click)="removeTask(task.id)"><span>close</span></button></td>
         </tr>
       </tbody>
@@ -48,5 +83,10 @@
   </div>
 </div>
 <div class="timeline-group custom-scroll">
-  <app-timeline *ngFor="let period of tasks" [task]="period" [maxRange]="maxRange"></app-timeline>
+  <app-timeline
+    *ngFor="let period of tasks"
+    [task]="period"
+    [algorithm]="algorithm"
+    [maxRange]="maxRange"
+  ></app-timeline>
 </div>
