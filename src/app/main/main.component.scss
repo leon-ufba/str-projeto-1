@@ -3,8 +3,8 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
+  // height: 100vh;
+  // overflow: hidden;
 }
 
 .task-manager {
@@ -38,7 +38,7 @@
   .new-task-form {
     display: flex;
     flex-direction: column;
-    width: 120px;
+    width: 90px;
     padding: 8px;
     .labeled-checkbox {
       display: flex;
@@ -76,6 +76,9 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 12px;
+      span {
+        margin: auto;
+      }
       input:not([type=checkbox]) {
         width: 42px;
         height: 24px;
@@ -171,7 +174,9 @@
   flex-direction: column;
   overflow-y: auto;
   flex: 1;
-  margin: 0px 120px;
-  // align-items: center;
+  // margin: 0px 120px;
+  margin: 0px auto;
+  width: 80%;
+  min-width: 360px;
 }
 

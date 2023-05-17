@@ -8,22 +8,22 @@
   <div class="new-task-form">
 
     <div class="labeled-input">
-      <span>Período</span>
+      <span>T</span>
       <input [(ngModel)]="newTask.period" type="number">
     </div>
     <div class="labeled-input">
-      <span>Duração</span>
+      <span>C</span>
       <input [(ngModel)]="newTask.duration" type="number">
     </div>
     <div class="labeled-input">
-      <span>Deadline</span>
+      <span>D</span>
       <input [(ngModel)]="newTask.deadline" type="number">
     </div>
     <!-- <div class="labeled-checkbox">
       <input [(ngModel)]="newTask.isAsync" [ngModelOptions]="{standalone: true}" type="checkbox" id="asyncTask">
       <label for="asyncTask">Assíncrona</label>
     </div> -->
-    <button type="button" (click)="addTask()">Adicionar Task</button>
+    <button type="button" (click)="addTask()">Add Task</button>
   </div>
   <div class="details-panel">
     <div class="detail-group">
@@ -64,10 +64,10 @@
       <thead>
         <tr>
           <th scope="col">Task ID</th>
-          <th scope="col">Período</th>
-          <th scope="col">Duração</th>
-          <th scope="col">Deadline</th>
-          <th scope="col">Deletar</th>
+          <th scope="col">T</th>
+          <th scope="col">C</th>
+          <th scope="col">D</th>
+          <th scope="col">Del</th>
         </tr>
       </thead>
       <tbody>
